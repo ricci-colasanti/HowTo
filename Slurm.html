@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SLURM on Single Machine</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
 </head>
 <body>
 
@@ -35,20 +36,11 @@
                 
                 <ol>
                     <li class="mb-2">
-                        <strong>Update your package list:</strong>
-                        <div class="card bg-light mt-2">
-                            <div class="card-body">
-                                <code>sudo apt-get update  # For Debian/Ubuntu-based systems<br>
-                                sudo yum update      # For Red Hat/CentOS-based systems</code>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="mb-2">
                         <strong>Install SLURM:</strong>
                         <div class="card bg-light mt-2">
                             <div class="card-body">
-                                <code>sudo apt-get install slurm-wlm slurm-wlm-basic-plugins  # For Debian/Ubuntu-based systems<br>
-                                sudo yum install slurm slurm-munge  # For Red Hat/CentOS-based systems</code>
+                                <code id="inst">sudo apt-get install slurm-wlm slurm-wlm-basic-plugins</code>
+                                <button class="copy-button" onclick="copyCode('inst')">Copy Code</button>
                             </div>
                         </div>
                     </li>
@@ -69,7 +61,7 @@
                         <p class="mt-2">Add the following configuration:</p>
                         <div class="card bg-light mt-2">
                             <div class="card-body">
-                                <pre># SLURM configuration file
+                                <pre id="config"># SLURM configuration file
 ClusterName=mycluster
 ControlMachine=your_hostname
 MpiDefault=none
@@ -88,7 +80,9 @@ SelectTypeParameters=CR_Core_Memory
 
 NodeName=your_hostname CPUs=4 State=UNKNOWN
 PartitionName=debug Nodes=your_hostname Default=YES MaxTime=INFINITE State=UP</pre>
+
                             </div>
+                            <button class="copy-button" onclick="copyCode('config')">Copy Code</button>
                         </div>
                         <p class="mt-2">Replace <code>your_hostname</code> with the actual hostname of your machine and <code>CPUs=4</code> with the number of cores your machine has.</p>
                     </li>
@@ -158,5 +152,6 @@ srun sleep 60</pre>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
