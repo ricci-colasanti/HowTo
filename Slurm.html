@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLURM on Single Machine</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Navigation Menu -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html">How-To Guide</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="Slurm.html">Slurm</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="card">
+            <div class="card-body">
+                <p class="lead">You can use SLURM (Simple Linux Utility for Resource Management) on a single computer with multiple cores. SLURM is designed to manage and schedule jobs on clusters, but it can also be configured to work on a single multi-core machine. Here's a basic outline of how you can set it up:</p>
+
+                <h4 class="mt-4 mb-3">Step 1: Install SLURM</h4>
+                <p>First, you need to install SLURM on your system. The installation process can vary depending on your Linux distribution. Here are the general steps:</p>
+                
+                <ol>
+                    <li class="mb-2">
+                        <strong>Update your package list:</strong>
+                        <div class="card bg-light mt-2">
+                            <div class="card-body">
+                                <code>sudo apt-get update  # For Debian/Ubuntu-based systems<br>
+                                sudo yum update      # For Red Hat/CentOS-based systems</code>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="mb-2">
+                        <strong>Install SLURM:</strong>
+                        <div class="card bg-light mt-2">
+                            <div class="card-body">
+                                <code>sudo apt-get install slurm-wlm slurm-wlm-basic-plugins  # For Debian/Ubuntu-based systems<br>
+                                sudo yum install slurm slurm-munge  # For Red Hat/CentOS-based systems</code>
+                            </div>
+                        </div>
+                    </li>
+                </ol>
+
+                <h4 class="mt-4 mb-3">Step 2: Configure SLURM</h4>
+                <p>You need to configure SLURM to recognize your single multi-core machine as a cluster. This involves editing several configuration files.</p>
+                
+                <ol>
+                    <li class="mb-3">
+                        <strong>Edit the <code>slurm.conf</code> file:</strong>
+                        <p>This file is typically located in <code>/etc/slurm-llnl/slurm.conf</code>. You need to define your node and partition settings.</p>
+                        <div class="card bg-light mt-2">
+                            <div class="card-body">
+                                <code>sudo nano /etc/slurm-llnl/slurm.conf</code>
+                            </div>
+                        </div>
+                        <p class="mt-2">Add the following configuration:</p>
+                        <div class="card bg-light mt-2">
+                            <div class="card-body">
+                                <pre># SLURM configuration file
+ClusterName=mycluster
+ControlMachine=your_hostname
+MpiDefault=none
+ProctrackType=proctrack/linuxproc
+ReturnToService=1
+SlurmctldLogFile=/var/log/slurm-llnl/slurmctld.log
+SlurmctldPidFile=/var/run/slurm-llnl/slurmctld.pid
+SlurmdLogFile=/var/log/slurm-llnl/slurmd.log
+SlurmdPidFile=/var/run/slurm-llnl/slurmd.pid
+SlurmUser=slurm
+StateSaveLocation=/var/spool/slurm-llnl
+SwitchType=switch/none
+TaskPlugin=task/affinity
+SelectType=select/linear
+SelectTypeParameters=CR_Core_Memory
+
+NodeName=your_hostname CPUs=4 State=UNKNOWN
+PartitionName=debug Nodes=your_hostname Default=YES MaxTime=INFINITE State=UP</pre>
+                            </div>
+                        </div>
+                        <p class="mt-2">Replace <code>your_hostname</code> with the actual hostname of your machine and <code>CPUs=4</code> with the number of cores your machine has.</p>
+                    </li>
+                    <li class="mb-3">
+                        <strong>Edit the <code>cgroup.conf</code> file:</strong>
+                        <p>This file is typically located in <code>/etc/slurm-llnl/cgroup.conf</code>. You need to enable cgroup support.</p>
+                        <div class="card bg-light mt-2">
+                            <div class="card-body">
+                                <code>sudo nano /etc/slurm-llnl/cgroup.conf</code>
+                            </div>
+                        </div>
+                        <p class="mt-2">Add the following configuration:</p>
+                        <div class="card bg-light mt-2">
+                            <div class="card-body">
+                                <pre>CgroupAutomount=yes
+ConstrainCores=yes
+ConstrainRAMSpace=yes
+ConstrainSwapSpace=yes</pre>
+                            </div>
+                        </div>
+                    </li>
+                </ol>
+
+                <h4 class="mt-4 mb-3">Step 3: Start SLURM Services</h4>
+                <p>Start the SLURM controller and node services:</p>
+                <div class="card bg-light mt-2">
+                    <div class="card-body">
+                        <code>sudo systemctl start slurmctld<br>
+                        sudo systemctl start slurmd</code>
+                    </div>
+                </div>
+                <p class="mt-2">Enable them to start on boot:</p>
+                <div class="card bg-light mt-2">
+                    <div class="card-body">
+                        <code>sudo systemctl enable slurmctld<br>
+                        sudo systemctl enable slurmd</code>
+                    </div>
+                </div>
+
+                <h4 class="mt-4 mb-3">Step 4: Submit a Job</h4>
+                <p>You can now submit jobs using SLURM. Create a simple job script, for example, <code>job_script.sh</code>:</p>
+                <div class="card bg-light mt-2">
+                    <div class="card-body">
+                        <pre>#!/bin/bash
+#SBATCH --job-name=testjob
+#SBATCH --output=output.txt
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --time=00:10:00
+
+srun hostname
+srun sleep 60</pre>
+                    </div>
+                </div>
+                <p class="mt-2">Submit the job:</p>
+                <div class="card bg-light mt-2">
+                    <div class="card-body">
+                        <code>sbatch job_script.sh</code>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-4">
+                    This setup allows you to use SLURM on a single multi-core machine, enabling you to manage and schedule jobs effectively.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
